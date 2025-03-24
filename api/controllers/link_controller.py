@@ -288,11 +288,14 @@ async def get_original_url(short_code: str, ip_address: str) -> str:
             )
         
         # Check if link is expired
-        if link.is_expired:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Link has expired"
-            )
+        if link.expires_at:
+            from datetime import datetime, timezone
+            now = datetime.now(timezone.utc)
+            if now > link.expires_at:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Link has expired"
+                )
         
         # Record access
         await record_link_access(db, link, ip_address)

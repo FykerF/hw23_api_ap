@@ -37,8 +37,10 @@ class Link(Base):
         """Check if the link is expired"""
         if not self.expires_at:
             return False
-        from datetime import datetime
-        return datetime.now() > self.expires_at
+        from datetime import datetime, timezone
+        # Make sure we use UTC timezone for both
+        now = datetime.now(timezone.utc)
+        return now > self.expires_at
         
     def to_dict(self):
         """Convert link to dictionary representation"""

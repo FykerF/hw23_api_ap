@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
@@ -251,7 +251,7 @@ async def cleanup_expired_links(db: Session) -> int:
     Returns:
         Number of links cleaned up
     """
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     expired_links = db.query(Link).filter(
         and_(
             Link.expires_at.isnot(None),

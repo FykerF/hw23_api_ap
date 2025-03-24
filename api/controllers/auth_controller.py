@@ -90,6 +90,8 @@ async def get_current_user(
     db: Session = Depends(get_db)
 ) -> User:
     """Get current user from JWT token"""
+    from core.redis_client import get_redis, AUTH_PREFIX  # Add this import
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -104,9 +106,11 @@ async def get_current_user(
             raise credentials_exception
             
         # Check if token is blacklisted (for logout)
-        token_blacklisted = await redis_client.exists(f"{AUTH_PREFIX}blacklist:{token}")
-        if token_blacklisted:
-            raise credentials_exception
+        redis = await get_redis()  # Get Redis client
+        if redis:  # Only check if Redis is available
+            token_blacklisted = await redis.exists(f"{AUTH_PREFIX}blacklist:{token}")
+            if token_blacklisted:
+                raise credentials_exception
             
     except JWTError:
         raise credentials_exception
@@ -119,7 +123,7 @@ async def get_current_user(
     return user
 
 async def get_optional_current_user(
-    token: Optional[str] = Depends(oauth2_scheme),
+    token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> Optional[User]:
     """Get current user if available, otherwise None"""
@@ -133,6 +137,13 @@ async def get_optional_current_user(
 
 async def blacklist_token(token: str) -> bool:
     """Blacklist a token (for logout)"""
+    from core.redis_client import get_redis, AUTH_PREFIX  # Add this import
+    
+    # Get Redis client
+    redis = await get_redis()
+    if not redis:
+        return False
+        
     # Decode token to get expiration time
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
@@ -146,7 +157,7 @@ async def blacklist_token(token: str) -> bool:
             
             if ttl > 0:
                 # Add token to blacklist with TTL until its expiration
-                await redis_client.setex(f"{AUTH_PREFIX}blacklist:{token}", int(ttl), "1")
+                await redis.setex(f"{AUTH_PREFIX}blacklist:{token}", int(ttl), "1")
                 return True
     except:
         pass
