@@ -76,8 +76,9 @@ async def client(override_get_db):
     # Initialize Redis for testing
     await init_redis_pool()
     
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        yield ac
+    # Create client with async with statement
+    client = AsyncClient(app=app, base_url="http://test")
+    yield client  # Change this line from 'async with' to just 'yield'
     
     # Close Redis connection
     await close_redis_pool()

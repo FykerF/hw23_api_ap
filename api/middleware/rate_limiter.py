@@ -1,7 +1,7 @@
 from fastapi import Request, HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from core.config import settings
-from core.redis_client import redis_client
+from core.redis_client import get_redis
 import time
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
@@ -12,6 +12,13 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Skip rate limiting for certain paths (e.g., healthchecks)
         if request.url.path in ["/health", "/docs", "/redoc", "/openapi.json"]:
+            return await call_next(request)
+        
+        # Get Redis client for this request
+        redis_client = await get_redis()
+        
+        # If Redis isn't available, just proceed with the request
+        if not redis_client:
             return await call_next(request)
             
         # Get client IP address

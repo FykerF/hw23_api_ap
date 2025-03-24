@@ -15,3 +15,5 @@ aioredis==2.0.1
 pytest==7.3.1
 httpx==0.24.0
 pytest-asyncio==0.21.0
+email-validator
+pydantic[email]
