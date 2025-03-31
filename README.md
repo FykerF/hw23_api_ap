@@ -208,10 +208,6 @@ The service uses PostgreSQL for permanent storage and Redis for caching.
 
 ### Testing
 
-The test suite aims to achieve at least 90% code coverage. Current test coverage results:
-
-![Coverage Report](./htmlcov/coverage-report.png)
-
 ## Testing Structure
 
 The test suite is organized as follows:
