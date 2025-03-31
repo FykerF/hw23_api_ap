@@ -7,4 +7,4 @@ pip install -r requirements.txt
 
 # Do NOT run migrations
 # We're intentionally skipping "alembic upgrade head"
-echo "Skipping database migrations as requested"
+echo "Skipping database migrations for render deploy"

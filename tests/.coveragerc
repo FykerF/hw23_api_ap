@@ -1,0 +1,29 @@
+[run]
+source = 
+    api
+    core
+    services
+    utils
+    main.py
+
+omit = 
+    */tests/*
+    */venv/*
+    */__pycache__/*
+    */test_*.py
+    */conftest.py
+    */alembic/*
+    */scripts/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    pass
+    raise ImportError
+    except ImportError
+    
+[html]
+directory = htmlcov

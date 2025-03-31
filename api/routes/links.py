@@ -50,20 +50,26 @@ router = APIRouter()
 async def shorten_url(
     link_data: LinkCreate,
     db: Session = Depends(get_db),
+    # Make sure authentication is truly optional
     current_user: Optional[User] = Depends(get_optional_current_user)
 ):
     """
-    Create a short URL
+    Create a short URL.
+    Authentication is optional for this endpoint.
     """
-    link = await create_short_link(
-        db,
-        original_url=link_data.original_url,
-        current_user=current_user,
-        custom_alias=link_data.custom_alias,
-        expires_at=link_data.expires_at
-    )
-    
-    return link
+    try:
+        link = await create_short_link(
+            db,
+            original_url=link_data.original_url,
+            current_user=current_user,
+            custom_alias=link_data.custom_alias,
+            expires_at=link_data.expires_at
+        )
+        return link
+    except Exception as e:
+        # Log the error for debugging
+        print(f"Error creating short link: {str(e)}")
+        raise
 
 @router.get("/{short_code}", response_model=LinkResponse)
 async def get_link(
